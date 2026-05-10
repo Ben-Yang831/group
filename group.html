@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>遊歷分組查詢系統</title>
+
+<style>
+
+body{
+    font-family: Arial, sans-serif;
+    background:#f4f6fb;
+    margin:0;
+    padding:30px;
+    color:#222;
+}
+
+.container{
+    max-width:1200px;
+    margin:auto;
+}
+
+h1{
+    text-align:center;
+    margin-bottom:30px;
+}
+
+.card{
+    background:white;
+    border-radius:18px;
+    padding:24px;
+    margin-bottom:24px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.08);
+}
+
+h2{
+    margin-top:0;
+}
+
+select, button{
+    padding:10px 14px;
+    font-size:16px;
+    border-radius:8px;
+    border:1px solid #ccc;
+    margin-right:10px;
+    margin-top:10px;
+}
+
+button{
+    background:#4f7cff;
+    color:white;
+    border:none;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#355fe0;
+}
+
+.result{
+    margin-top:20px;
+    font-size:18px;
+    line-height:1.8;
+}
+
+.route-box{
+    background:#eef3ff;
+    padding:18px;
+    border-radius:12px;
+}
+
+.highlight{
+    color:#2453ff;
+    font-weight:bold;
+    font-size:20px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+}
+
+th, td{
+    border:1px solid #ddd;
+    padding:12px;
+    text-align:center;
+}
+
+th{
+    background:#4f7cff;
+    color:white;
+}
+
+tr:nth-child(even){
+    background:#f8faff;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>遊歷分組查詢系統</h1>
+
+    <!-- 個人查詢 -->
+    <div class="card">
+
+        <h2>個人查詢</h2>
+
+        <select id="groupSelect">
+            <option value="">選擇組別</option>
+        </select>
+
+        <select id="memberSelect">
+            <option value="">選擇角色</option>
+            <option value="1">1號（講解者）</option>
+            <option value="2">2號（遊歷者1）</option>
+            <option value="3">3號（遊歷者2）</option>
+            <option value="4">4號（遊歷者3）</option>
+        </select>
+
+        <button onclick="searchPerson()">查詢</button>
+
+        <div class="result" id="result"></div>
+
+    </div>
+
+    <!-- 小組總覽 -->
+    <div class="card">
+
+        <h2>小組版總覽</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>組別</th>
+                    <th>1號（講解者）</th>
+                    <th>2號（遊歷者1）</th>
+                    <th>3號（遊歷者2）</th>
+                    <th>4號（遊歷者3）</th>
+                </tr>
+            </thead>
+
+            <tbody id="groupTable"></tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<script>
+
+const totalGroups = 10;
+
+// 循環組別函數
+function wrapGroup(num){
+    return ((num - 1) % totalGroups + totalGroups) % totalGroups + 1;
+}
+
+// 儲存所有資料
+const groupData = [];
+
+// 建立資料
+for(let g = 1; g <= totalGroups; g++){
+
+    const data = {
+
+        group: g,
+
+        member1: `留在第 ${g} 組`,
+
+        member2: [
+            wrapGroup(g + 1),
+            wrapGroup(g + 2),
+            wrapGroup(g + 3)
+        ],
+
+        member3: [
+            wrapGroup(g + 4),
+            wrapGroup(g + 5),
+            wrapGroup(g + 6)
+        ],
+
+        member4: [
+            wrapGroup(g + 7),
+            wrapGroup(g + 8),
+            wrapGroup(g + 9)
+        ]
+    };
+
+    groupData.push(data);
+}
+
+// 建立小組總覽表格
+const tableBody = document.getElementById("groupTable");
+
+groupData.forEach(data => {
+
+    const row = `
+        <tr>
+            <td>第 ${data.group} 組</td>
+
+            <td>
+                ${data.member1}
+            </td>
+
+            <td>
+                ${data.member2.join(" → ")}
+            </td>
+
+            <td>
+                ${data.member3.join(" → ")}
+            </td>
+
+            <td>
+                ${data.member4.join(" → ")}
+            </td>
+        </tr>
+    `;
+
+    tableBody.innerHTML += row;
+
+});
+
+// 建立組別下拉選單
+const groupSelect = document.getElementById("groupSelect");
+
+for(let i = 1; i <= totalGroups; i++){
+
+    const option = document.createElement("option");
+
+    option.value = i;
+    option.textContent = `第 ${i} 組`;
+
+    groupSelect.appendChild(option);
+}
+
+// 個人查詢功能
+function searchPerson(){
+
+    const group = parseInt(document.getElementById("groupSelect").value);
+
+    const member = parseInt(document.getElementById("memberSelect").value);
+
+    const result = document.getElementById("result");
+
+    if(!group || !member){
+
+        result.innerHTML = `
+            <div class="route-box">
+                請先選擇組別與角色
+            </div>
+        `;
+
+        return;
+    }
+
+    const data = groupData[group - 1];
+
+    // 1號
+    if(member === 1){
+
+        result.innerHTML = `
+            <div class="route-box">
+
+                <div class="highlight">
+                    第 ${group} 組｜1號（講解者）
+                </div>
+
+                留在第 ${group} 組進行講解
+
+            </div>
+        `;
+    }
+
+    // 2號
+    else if(member === 2){
+
+        result.innerHTML = `
+            <div class="route-box">
+
+                <div class="highlight">
+                    第 ${group} 組｜2號（遊歷者1）
+                </div>
+
+                遊歷路線：<br><br>
+
+                ${data.member2.join(" → ")}
+
+            </div>
+        `;
+    }
+
+    // 3號
+    else if(member === 3){
+
+        result.innerHTML = `
+            <div class="route-box">
+
+                <div class="highlight">
+                    第 ${group} 組｜3號（遊歷者2）
+                </div>
+
+                遊歷路線：<br><br>
+
+                ${data.member3.join(" → ")}
+
+            </div>
+        `;
+    }
+
+    // 4號
+    else if(member === 4){
+
+        result.innerHTML = `
+            <div class="route-box">
+
+                <div class="highlight">
+                    第 ${group} 組｜4號（遊歷者3）
+                </div>
+
+                遊歷路線：<br><br>
+
+                ${data.member4.join(" → ")}
+
+            </div>
+        `;
+    }
+}
+
+</script>
+
+</body>
+</html>
